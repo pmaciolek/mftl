@@ -1,5 +1,7 @@
 # Moral Foundations Theory + LLMs
 
-In this project, I try to use LLMs to analyze the moral foundations of a text. To check if there's a bias by the model, I also use the anonymized text.
+In this project, I play with using LLMs to analyze the moral foundations of a text. 
 
-The source is random recent tweets from several popular Twitter accounts. 
+The source is random recent tweets from several popular Twitter accounts and a collection of archived tweets from Donald Trump. 
+
+See the [Jupyter notebook](moral_foundations.ipynb) for more details.

@@ -1,6 +1,6 @@
 import csv
 
-from constants import ANONYMIZE
+from constants import ANONYMIZE, LLM_MODELS
 import ell
 import polars as pl
 
@@ -11,41 +11,50 @@ from moral_foundations import (
     process_moral_foundations,
 )
 
-ell.init(store='./logdir', autocommit=True)
+# If we want to log the calls
+# ell.init(store='./logdir', autocommit=True)
 
 
 def main():
-    dfs = []
+    for model in LLM_MODELS:
+        build_for_model(model)
 
-    with open('quotes.csv', 'r', encoding='utf-8') as file:
+
+def build_for_model(model: str):
+    
+    dfs = []
+    model_name = model.split(":")[0]
+
+    with open('trump-tweets-filtered-sampled.csv', 'r', encoding='utf-8') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             author = row['author']
             source = row['source'] 
             quote = row['quote']
-            direct_foundations = process_moral_foundations(quote)
-            anonymized_foundations = process_moral_foundations(anonymized)
+            direct_foundations = process_moral_foundations(model, quote)
 
             # Convert single row to DataFrame and append
             for foundations in direct_foundations:
-                dfs.append(pl.DataFrame([get_dict_from_foundations(author, source, quote, foundations)]))
+                dfs.append(pl.DataFrame([get_dict_from_foundations(model_name, author, source, quote, foundations)]))
  
             if ANONYMIZE:
-                anonymized = anonymize_message(quote)                
+                anonymized = anonymize_message(quote,api_params=(dict(model=model)))                
+                anonymized_foundations = process_moral_foundations(model, anonymized)
                 for foundations in anonymized_foundations:
-                    dfs.append(pl.DataFrame([get_dict_from_foundations(f"{author}-anon", source, anonymized, foundations)]))
+                    dfs.append(pl.DataFrame([get_dict_from_foundations(model_name, f"{author}-anon", source, anonymized, foundations)]))
 
     df = pl.concat(dfs)
-    df.write_parquet('foundations.parquet')
+    df.write_parquet(f'trump-{model_name}.parquet')
 
 
 def append_to_df(df: pl.DataFrame, dict: dict):
     df.extend(pl.DataFrame([dict]))
 
-def get_dict_from_foundations(author, source, quote, foundations: MoralFoundations):    
+def get_dict_from_foundations(model, author, source, quote, foundations: MoralFoundations):    
     # Create a dictionary with all data for one row
-    print(foundations)
+    #print(foundations)
     row_dict = {
+        'model': model,
         'author': author,
         'source': source, 
         'quote': quote,

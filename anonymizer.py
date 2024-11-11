@@ -1,9 +1,9 @@
 import ell
 
-from constants import LLM_MODEL
+from constants import DEFAULT_LLM_MODEL
 
 
-@ell.simple(model=LLM_MODEL)
+@ell.simple(model=DEFAULT_LLM_MODEL)
 def anonymize_message(message: str):
     """You are a text anonymizer. Replace any mentions of real people and organizations with fictional but equivalent alternatives.
     Keep the same type (e.g. replace a real company with a fictional company, a real person with a fictional person).
